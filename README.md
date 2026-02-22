@@ -1,12 +1,12 @@
-# Exec Plan Plugin (template)
+# Fork Last Message Plugin
 
-OpenCode plugin that intercepts the `/exec-plan` command, copies the last assistant message from the current session, creates a new session, and inserts the message without sending it to the model.
+OpenCode plugin that intercepts the `/fork-last-message` command, copies the last assistant message from the current session, creates a new session, and inserts the message without sending it to the model.
 
 ## Install (local)
 
 ```bash
 mkdir -p .opencode/plugins
-git clone <this-repo> .opencode/plugins/opencode-exec-plan
+git clone <this-repo> .opencode/plugins/opencode-fork-last-message
 ```
 
 ## Usage
@@ -14,13 +14,13 @@ git clone <this-repo> .opencode/plugins/opencode-exec-plan
 In OpenCode, run:
 
 ```
-/exec-plan
+/fork-last-message
 ```
 
 ## How it works
 
 - Reads the last assistant message from the current session.
-- Creates a new session with the title "Exec plan".
+- Creates a new session with a title based on the first 50 characters of the message.
 - Uses `session.prompt` with `noReply: true` to insert the message without triggering a model response.
 
 ## Structure

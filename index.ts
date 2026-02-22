@@ -1,6 +1,6 @@
 import type { Plugin } from "@opencode-ai/plugin"
 
-const EXEC_PLAN_COMMAND = "exec-plan"
+const FORK_LAST_MESSAGE_COMMAND = "fork-last-message"
 
 function getTextPart(parts: Array<{ type: string; text?: string }>): string | null {
   for (let index = parts.length - 1; index >= 0; index -= 1) {
@@ -13,17 +13,17 @@ function getTextPart(parts: Array<{ type: string; text?: string }>): string | nu
   return null
 }
 
-export const ExecPlanPlugin: Plugin = async ({ client }) => {
+export const ForkLastMessagePlugin: Plugin = async ({ client }) => {
   return {
     config: async (opencodeConfig) => {
       opencodeConfig.command ??= {}
-      opencodeConfig.command[EXEC_PLAN_COMMAND] = {
+      opencodeConfig.command[FORK_LAST_MESSAGE_COMMAND] = {
         template: "",
-        description: "Create a new session with the last message",
+        description: "Fork the last assistant message to a new session",
       }
     },
     "command.execute.before": async (input, output) => {
-      if (input.command !== EXEC_PLAN_COMMAND) {
+      if (input.command !== FORK_LAST_MESSAGE_COMMAND) {
         return
       }
 
@@ -46,30 +46,32 @@ export const ExecPlanPlugin: Plugin = async ({ client }) => {
         if (!lastText) {
           await app.log({
             body: {
-              service: "exec-plan-plugin",
+              service: "fork-last-message-plugin",
               level: "warn",
               message: "No assistant text message found to copy",
               extra: { sessionID },
             },
           })
-          throw new Error("__EXEC_PLAN_COMMAND_HANDLED__")
+          throw new Error("__FORK_LAST_MESSAGE_COMMAND_HANDLED__")
         }
+
+        const title = lastText.length > 50 ? lastText.slice(0, 50) + "..." : lastText
 
         const newSession = await client.session.create({
           body: {
-            title: "Exec plan",
+            title,
           },
         })
 
         if (!newSession.data) {
           await app.log({
             body: {
-              service: "exec-plan-plugin",
+              service: "fork-last-message-plugin",
               level: "error",
               message: "Failed to create new session",
             },
           })
-          throw new Error("__EXEC_PLAN_COMMAND_HANDLED__")
+          throw new Error("__FORK_LAST_MESSAGE_COMMAND_HANDLED__")
         }
 
         await client.session.prompt({
@@ -82,7 +84,7 @@ export const ExecPlanPlugin: Plugin = async ({ client }) => {
 
         await app.log({
           body: {
-            service: "exec-plan-plugin",
+            service: "fork-last-message-plugin",
             level: "info",
             message: "Created new session with last message",
             extra: { sourceSessionID: sessionID, newSessionID: newSession.data.id },
@@ -92,26 +94,28 @@ export const ExecPlanPlugin: Plugin = async ({ client }) => {
         await client.tui.openSessions()
         await client.tui.showToast({
           body: {
-            message: "New session created. Select to open.",
+            message: `New session created. ID: ${newSession.data.id}`,
             variant: "success",
           },
         })
       } catch (error) {
         await app.log({
           body: {
-            service: "exec-plan-plugin",
+            service: "fork-last-message-plugin",
             level: "error",
-            message: "Failed to execute /exec-plan",
+            message: "Failed to execute /fork-last-message",
             extra: {
               error: error instanceof Error ? error.message : String(error),
             },
           },
         })
+
+        throw new Error("__FORK_LAST_MESSAGE_COMMAND_HANDLED__")
       }
 
-      throw new Error("__EXEC_PLAN_COMMAND_HANDLED__")
+      throw new Error("__FORK_LAST_MESSAGE_COMMAND_HANDLED__")
     },
   }
 }
 
-export default ExecPlanPlugin
+export default ForkLastMessagePlugin

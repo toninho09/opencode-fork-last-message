@@ -4,7 +4,7 @@ This file provides guidelines for agentic coding agents working in this reposito
 
 ## Project Overview
 
-This is an OpenCode plugin that intercepts the `/exec-plan` command, copies the last assistant message from the current session, creates a new session, and inserts the message without sending it to the model.
+This is an OpenCode plugin that intercepts the `/fork-last-message` command, copies the last assistant message from the current session, creates a new session, and inserts the message without sending it to the model.
 
 ## Build/Development Commands
 
@@ -41,7 +41,7 @@ npx tsc --noEmit
 - Use semicolons consistently
 
 ### Naming Conventions
-- Constants: UPPERCASE_SNAKE_CASE (e.g., `EXEC_PLAN_COMMAND`)
+- Constants: UPPERCASE_SNAKE_CASE (e.g., `FORK_LAST_MESSAGE_COMMAND`)
 - Functions: camelCase (e.g., `getTextPart`)
 - Variables: camelCase
 - Types/Interfaces: PascalCase
@@ -81,7 +81,7 @@ npx tsc --noEmit
 - Type check array elements: `parts as Array<{ type: string; text?: string }>`
 
 ### Plugin Architecture
-- Export plugin as default: `export default ExecPlanPlugin`
+- Export plugin as default: `export default ForkLastMessagePlugin`
 - Plugin returns object with lifecycle hooks: `config`, `command.execute.before`
 - Use `client` from plugin context for API calls
 - Use `app` from context for logging and UI operations
